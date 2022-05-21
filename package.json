@@ -1,0 +1,15 @@
+{
+  "name": "ntcore",
+  "version": "0.1.0",
+  "description": "A simple CLI for nightcoring songs and corresponding rhythm game maps.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^9.2.0"
+  }
+}
