@@ -1,7 +1,7 @@
 /*
  * A basic wrapper for ffmpeg and ffprobe.
  */
-const { spawn } = require('child_process');
+const { spawn, ChildProcessWithoutNullStreams } = require('child_process');
 const { Readable } = require('stream');
 
 /**
@@ -31,6 +31,53 @@ async function getAudioInfo(path) {
   });
   return audioStream;
 }
+/**
+ * 
+ * @param {string} path 
+ * @param {number} pitch 
+ * @param {number} speed 
+ * @param {string} outputPath
+ */
+async function nightcore(path, pitch, speed, outputPath) {
+  const audioInfo = await getAudioInfo(path);
+  if (!audioInfo) throw new Error('No audio stream found in file.');
+
+  const ffmpeg = spawn('ffmpeg', [
+    '-hide_banner',
+    '-i', path,
+    ...nightcoreFilter(audioInfo.sample_rate, pitch, speed),
+    '-y',
+    outputPath
+  ]);
+  process.stdin.pipe(ffmpeg.stdin);
+  ffmpeg.stderr.pipe(process.stdout);
+}
+
+/**
+ * Waits for the child process to finish.
+ * 
+ * @param {ChildProcessWithoutNullStreams} child 
+ * @returns 
+ */
+function wait(child) {
+  return new Promise((resolve, reject) => {
+    child.on('close', resolve());
+  });
+}
+
+/**
+ * Creates an args array for a spawn call.
+ * 
+ * @param {number} sampleRate
+ * @param {number} pitch 
+ * @param {number} speed 
+ * @return {string[]}
+ */
+function nightcoreFilter(sampleRate, pitch, speed) {
+  return [
+    '-af', `asetrate=${sampleRate*pitch}, aresample=${sampleRate}, atempo=${speed/pitch}`,
+  ];
+}
 
 /**
  * Converts the contents of a stream to a string.
@@ -49,4 +96,4 @@ function streamToString (stream, enc = 'utf8') {
   });
 }
 
-module.exports = { getAudioInfo }
+module.exports = { getAudioInfo, nightcore, nightcoreFilter }

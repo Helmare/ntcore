@@ -3,22 +3,16 @@
 const chalk = require('chalk');
 const { Command } = require('commander');
 const { argv } = require('process');
-const { getAudioInfo } = require('./ffmpeg');
+const { getAudioInfo, nightcore } = require('./ffmpeg');
 
 const program = new Command()
-  .argument('<path>', 'path of the audio file to nightcore')
+  .argument('<path>', 'path of output audio')
   .option('-p, --pitch <pitch>', 'pitch of the output as a decimal', '1')
   .option('-s, --speed <speed>', 'speed of the output as a decimal', '1')
+  .requiredOption('-o, --output <path>', 'output path')
 
 program.action(async (args, options) => {
-  const audioInfo = await getAudioInfo(program.args[0]);
-  if (!audioInfo) {
-    console.log(chalk.redBright('Invalid audio file.'));
-    return;
-  }
-
-
-  console.log(audioInfo);
+  await nightcore(program.args[0], options.pitch, options.speed, options.output);
 });
 
 program.parse(argv);
