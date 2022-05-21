@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "A simple CLI for nightcoring songs and corresponding rhythm game maps.",
   "main": "src/index.js",
+  "bin": {
+    "ntcore": "src/index.js"
+  },
   "scripts": {
     "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chalk": "^4.1.2",
     "commander": "^9.2.0"
   }
 }
