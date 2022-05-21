@@ -8,44 +8,47 @@ const { Readable } = require('stream');
  * Executes ffprobe on the path and returns the first audio
  * stream information.
  * 
- * @param {string} path 
+ * @param {string} p 
  * @returns {object}
  */
-async function getAudioInfo(path) {
+async function getAudioInfo(p) {
   const probe = spawn('ffprobe', [
     '-v', 'quiet',
+    '-show_format',
     '-show_streams',
     '-print_format', 'json',
-    path
+    p
   ]);
 
   const data = await streamToString(probe.stdout);
   const info = JSON.parse(data);
-  if (Object.keys(info).length == 0) return;
+  if (Object.keys(info).length == 0) return undefined;
 
   let audioStream;
   info.streams.forEach((stream) => {
     if (!audioStream && stream.codec_type == 'audio') {
       audioStream = stream;
+      audioStream.format = info.format.format_name;
     }
   });
   return audioStream;
 }
 /**
  * 
- * @param {string} path 
+ * @param {string} p 
  * @param {number} pitch 
  * @param {number} speed 
  * @param {string} outputPath
  */
-async function nightcore(path, pitch, speed, outputPath) {
-  const audioInfo = await getAudioInfo(path);
+async function nightcore(p, pitch, speed, outputPath) {
+  const audioInfo = await getAudioInfo(p);
   if (!audioInfo) throw new Error('No audio stream found in file.');
 
   const ffmpeg = spawn('ffmpeg', [
     '-hide_banner',
-    '-i', path,
+    '-i', p,
     ...nightcoreFilter(audioInfo.sample_rate, pitch, speed),
+    '-f', audioInfo.format,
     '-y',
     outputPath
   ]);
